@@ -9,8 +9,8 @@ class SolveMeDaddyApp : App(MainView::class) {
 
     override fun start(stage: Stage) {
         super.start(stage)
-        stage.width = 800.0
-        stage.height = 600.0
+        stage.width = 900.0
+        stage.height = 760.0
     }
 }
 

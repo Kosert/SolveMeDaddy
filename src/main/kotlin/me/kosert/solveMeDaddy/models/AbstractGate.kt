@@ -6,7 +6,7 @@ abstract class AbstractGate(
         //TODO jakieś inne parametry
 ) {
 
-
+    abstract val drawableFile: String
 
     override fun toString(): String {
         return type.toString()
