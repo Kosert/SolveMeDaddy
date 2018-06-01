@@ -6,16 +6,20 @@ import javafx.geometry.Insets
 import javafx.geometry.Orientation
 import javafx.scene.control.Label
 import javafx.scene.control.ListView
+import javafx.scene.control.TextField
 import javafx.scene.image.Image
 import javafx.scene.image.ImageView
+import me.kosert.solveMeDaddy.models.AbstractGate
 import me.kosert.solveMeDaddy.models.Tile
 import me.kosert.solveMeDaddy.models.GateType
+import me.kosert.solveMeDaddy.models.Variable
 import tornadofx.*
 
 class MainView : View(), IMainController.MainControllerCallbacks {
 
     private val controller: IMainController = MainController(this)
     private val fields = mutableListOf<Tile>()
+
     init {
         repeat(64) {
             fields.add(Tile(it))
@@ -29,13 +33,17 @@ class MainView : View(), IMainController.MainControllerCallbacks {
                 padding = Insets(10.0, 10.0, 10.0, 10.0)
             }
 
-            left = vbox {
+            left = vbox(20) {
                 vboxConstraints {
                     padding = Insets(0.0, 10.0, 0.0, 10.0)
+                    maxWidth = 200.0
+                    minWidth = 200.0
                 }
                 label("Wybrana bramka:")
-                label("//TODO")
-                //TODO
+
+                vbox(10) {
+                    id = "vboxDetails"
+                }
             }
 
             top = vbox(5) {
@@ -84,6 +92,7 @@ class MainView : View(), IMainController.MainControllerCallbacks {
                 minHeight = 650.0
 
                 onUserSelect(1) {
+                    controller.onFieldSelected(it)
                     validateAddButton()
                 }
 
@@ -97,13 +106,16 @@ class MainView : View(), IMainController.MainControllerCallbacks {
                 }
             }
 
-            /*center = tableview<AbstractGate> {
-                id = "gateTable"
-                items = mutableListOf<AbstractGate>().observable()
-                readonlyColumn("TYP", AbstractGate::type)
-            }*/
+            right = vbox(10) {
+                label("Zdefiniowane zmienne")
+                vbox(10) {
+                    id = "rightVariables"
+                    label("Brak")
+                }
+            }
         }
     }
+
     private fun validateAddButton() {
         root.lookup("#addButton").isDisable = controller.shouldDisableAddButton()
     }
@@ -113,7 +125,7 @@ class MainView : View(), IMainController.MainControllerCallbacks {
         return listView.selectedItem as GateType?
     }
 
-    override fun refreshGridCell(index : Int) {
+    override fun refreshGridCell(index: Int) {
         val imageView = root.lookup("#image$index") as ImageView
         val tile = fields[index]
 
@@ -133,5 +145,82 @@ class MainView : View(), IMainController.MainControllerCallbacks {
     override fun setHint(text: String) {
         val label = root.lookup("#hintLabel") as Label
         label.text = text
+    }
+
+    override fun populateDetails(gate: AbstractGate?) {
+        val vbox = root.lookup("#vboxDetails")
+        vbox.getChildList()!!.clear()
+
+        val inputFields = mutableListOf<TextField>()
+        var out : TextField? = null
+
+        gate?.let {
+            it.inputs.forEachIndexed { index, input ->
+                val row = hbox {
+                    label("Wejście $index") { minWidth = 100.0 }
+                    inputFields.add(textfield {
+                        maxWidth = 100.0
+                        text = input
+                        requestFocus()
+                    })
+                }
+                vbox.add(row)
+            }
+
+            if (it.inputs.size != it.maxInputs) {
+                val buttonAdd = button("Dodaj wejście") {
+                    setOnMouseClicked {
+                        val inputs = inputFields.map { it.text }
+                        controller.saveGate(gate, inputs, out!!.text)
+                        controller.addInput(gate)
+                    }
+                }
+                vbox.add(buttonAdd)
+            }
+            vbox.add(separator {})
+            val outRow = hbox {
+                label("Wyjście") { minWidth = 100.0 }
+                out = textfield {
+                    maxWidth = 100.0
+                    text = it.output
+                }
+            }
+            vbox.add(outRow)
+
+            val buttonSave = button("Zapisz") {
+                setOnMouseClicked {
+                    val inputs = inputFields.map { it.text }
+                    controller.saveGate(gate, inputs, out!!.text)
+                }
+            }
+            vbox.add(buttonSave)
+
+        } ?: run {
+            val row = label("To pole jest puste")
+            vbox.add(row)
+        }
+    }
+
+    override fun populateVariables(variables: List<Variable>) {
+        val vbox = root.lookup("#rightVariables")
+
+        vbox.getChildList()!!.clear()
+
+        if (variables.isEmpty()) {
+            vbox.add(label("Brak"))
+            return
+        }
+        vbox.add(label("Nazwa | Wartość"))
+
+        variables.forEach {
+            val row = hbox {
+                label(it.name) { minWidth = 100.0 }
+                textfield {
+                    text = it.value
+                    maxWidth = 100.0
+                }
+            }
+            vbox.add(row)
+        }
     }
 }
