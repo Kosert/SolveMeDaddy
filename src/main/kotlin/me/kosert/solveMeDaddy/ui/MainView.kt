@@ -17,10 +17,11 @@ import tornadofx.*
 
 class MainView : View(), IMainController.MainControllerCallbacks {
 
-    private val controller: IMainController = MainController(this)
+    private val controller: IMainController = MainController
     private val fields = mutableListOf<Tile>()
 
     init {
+        controller.setCallback(this)
         repeat(64) {
             fields.add(Tile(it))
         }
@@ -107,6 +108,14 @@ class MainView : View(), IMainController.MainControllerCallbacks {
             }
 
             right = vbox(10) {
+
+                button("Generuj") {
+                    setOnMouseClicked {
+                        println(MainController.generateOutputsMap())
+                        TODO("Tutaj panie minta")
+                    }
+                }
+
                 label("Zdefiniowane zmienne")
                 vbox(10) {
                     id = "rightVariables"
@@ -216,11 +225,24 @@ class MainView : View(), IMainController.MainControllerCallbacks {
             val row = hbox {
                 label(it.name) { minWidth = 100.0 }
                 textfield {
+                    id = "variable${it.name}"
                     text = it.value
                     maxWidth = 100.0
+                    isDisable = !it.editable
                 }
             }
             vbox.add(row)
         }
+    }
+
+    override fun getVariableValues(variables: Set<String>): Map<String, String> {
+
+        val map = mutableMapOf<String, String>()
+
+        variables.forEach {
+            val textfield = root.lookup("variable$it") as TextField
+            map[it] = textfield.text
+        }
+        return map
     }
 }

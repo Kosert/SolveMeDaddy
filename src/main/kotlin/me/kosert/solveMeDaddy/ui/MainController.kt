@@ -9,7 +9,13 @@ import me.kosert.solveMeDaddy.models.Variable
 import me.kosert.solveMeDaddy.util.GateFactory
 import tornadofx.Controller
 
-class MainController(private val callbacks: IMainController.MainControllerCallbacks) : Controller(), IMainController {
+object MainController : Controller(), IMainController {
+
+    private lateinit var callbacks: IMainController.MainControllerCallbacks
+
+    override fun setCallback(callbacks: IMainController.MainControllerCallbacks) {
+        this.callbacks = callbacks
+    }
 
     override val gateTypes: ObservableList<GateType> = FXCollections.observableArrayList()
 
@@ -22,6 +28,12 @@ class MainController(private val callbacks: IMainController.MainControllerCallba
 
     // mapOf (name, value)
     private val variables = mutableMapOf<String, String>()
+
+    fun getGateByOutputName(output: String) : AbstractGate? {
+        return addedGates.values.firstOrNull {
+            output == it.output
+        }
+    }
 
     override fun onAddClicked() {
         val gateType = callbacks.getSelectedAddType()!!
@@ -97,9 +109,62 @@ class MainController(private val callbacks: IMainController.MainControllerCallba
 
         variables.remove("")
 
+        val editables = getSchematicInputs().plus(getSchematicOutputs())
+
         val list = variables.map {
-            Variable(it.key, it.value)
+            Variable(it.key, it.value, editables.containsKey(it.key))
         }
         callbacks.populateVariables(list)
+    }
+
+    private fun refreshVariableValues() {
+        val map = callbacks.getVariableValues(variables.keys)
+        map.forEach { name, value ->
+            variables[name] = value
+        }
+    }
+
+    fun getSchematicOutputs() : Map<String, String> {
+
+        val namesList = mutableSetOf<String>()
+
+        addedGates.forEach {
+            it.value.inputs.forEach {
+                namesList.add(it)
+            }
+        }
+
+        return variables.filter {
+            !namesList.contains(it.key)
+        }
+    }
+
+    fun getSchematicInputs() : Map<String, String> {
+
+        val namesList = mutableSetOf<String>()
+
+        namesList.addAll(addedGates.map {
+            it.value.output
+        })
+
+        return variables.filter {
+            !namesList.contains(it.key)
+        }
+    }
+
+    fun generateOutputsMap(): Map<String, String> {
+
+        refreshVariableValues()
+
+        val map = mutableMapOf<String, String>()
+        val outs = getSchematicOutputs()
+        outs.forEach {
+            map[it.key] = generateOutputFormula(it.key)
+        }
+        return map
+    }
+
+    private fun generateOutputFormula(output: String): String {
+        return getGateByOutputName(output)!!.generateOutputFormula()
     }
 }

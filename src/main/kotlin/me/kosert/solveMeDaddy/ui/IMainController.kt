@@ -15,6 +15,7 @@ interface IMainController {
     fun onFieldSelected(tile: Tile)
     fun addInput(gate: AbstractGate)
     fun saveGate(gate: AbstractGate, inputs: List<String>, output: String)
+    fun setCallback(callbacks: MainControllerCallbacks)
 
     interface MainControllerCallbacks {
         fun refreshGridCell(index: Int)
@@ -23,5 +24,6 @@ interface IMainController {
         fun setHint(text: String)
         fun populateDetails(gate: AbstractGate?)
         fun populateVariables(variables: List<Variable>)
+        fun getVariableValues(variables: Set<String>): Map<String, String>
     }
 }
