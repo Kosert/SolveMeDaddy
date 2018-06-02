@@ -16,7 +16,7 @@ abstract class AbstractGate(
     var output : String = ""
 
 
-    fun generateOutputFormula() : String {
+    open fun generateOutputFormula() : String {
 
         val fromInputs = inputs.map {
             MainController.getGateByOutputName(it)?.generateOutputFormula() ?: run { it }
