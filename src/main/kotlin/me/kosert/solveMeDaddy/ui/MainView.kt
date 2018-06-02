@@ -2,6 +2,7 @@
 
 package me.kosert.solveMeDaddy.ui
 
+import bexpred.UltimateSolver
 import javafx.geometry.Insets
 import javafx.geometry.Orientation
 import javafx.scene.control.Label
@@ -17,6 +18,7 @@ import tornadofx.*
 
 class MainView : View(), IMainController.MainControllerCallbacks {
 
+    private val ultimateSolver = UltimateSolver()
     private val controller: IMainController = MainController
     private val fields = mutableListOf<Tile>()
 
@@ -112,7 +114,9 @@ class MainView : View(), IMainController.MainControllerCallbacks {
                 button("Generuj") {
                     setOnMouseClicked {
                         println(MainController.generateOutputsMap())
-                        TODO("Tutaj panie minta")
+                        println(ultimateSolver.getAllSolutions(MainController.generateOutputsMap(), HashMap<String, Boolean>(), HashMap<String, Boolean>()))
+//                        MainController.getSchematicOutputs(), MainController.getSchematicInputs())
+                        TODO("Tutaj panie Kosak")
                     }
                 }
 

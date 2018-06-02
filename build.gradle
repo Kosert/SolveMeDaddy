@@ -21,6 +21,7 @@ repositories {
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     compile 'no.tornado:tornadofx:1.7.16'
+    compile group: 'org.ow2.sat4j', name: 'org.ow2.sat4j.sat', version: '2.3.4'
 }
 
 compileKotlin {
