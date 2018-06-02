@@ -82,6 +82,7 @@ object MainController : Controller(), IMainController {
         gate.inputs.addAll(inputs)
         gate.output = output
 
+        refreshVariableValues()
         refreshVariables()
     }
 

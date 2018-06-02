@@ -225,7 +225,7 @@ class MainView : View(), IMainController.MainControllerCallbacks {
             val row = hbox {
                 label(it.name) { minWidth = 100.0 }
                 textfield {
-                    id = "variable${it.name}"
+                    id = "variable_${it.name}"
                     text = it.value
                     maxWidth = 100.0
                     isDisable = !it.editable
@@ -240,7 +240,7 @@ class MainView : View(), IMainController.MainControllerCallbacks {
         val map = mutableMapOf<String, String>()
 
         variables.forEach {
-            val textfield = root.lookup("variable$it") as TextField
+            val textfield = root.lookup("#variable_$it") as TextField
             map[it] = textfield.text
         }
         return map
