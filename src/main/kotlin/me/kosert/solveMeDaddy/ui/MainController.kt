@@ -29,7 +29,7 @@ object MainController : Controller(), IMainController {
     // mapOf (name, value)
     private val variables = mutableMapOf<String, String>()
 
-    fun getGateByOutputName(output: String) : AbstractGate? {
+    fun getGateByOutputName(output: String): AbstractGate? {
         return addedGates.values.firstOrNull {
             output == it.output
         }
@@ -125,7 +125,7 @@ object MainController : Controller(), IMainController {
         }
     }
 
-    fun getSchematicOutputs() : Map<String, String> {
+    private fun getSchematicOutputs(): Map<String, String> {
 
         val namesList = mutableSetOf<String>()
 
@@ -140,7 +140,7 @@ object MainController : Controller(), IMainController {
         }
     }
 
-    fun getSchematicInputs() : Map<String, String> {
+    private fun getSchematicInputs(): Map<String, String> {
 
         val namesList = mutableSetOf<String>()
 
@@ -151,6 +151,18 @@ object MainController : Controller(), IMainController {
         return variables.filter {
             !namesList.contains(it.key)
         }
+    }
+
+    fun getSchematicOutputsBools() = getSchematicOutputs().filterValues{
+        it != ""
+    }.mapValues {
+        it.value == "true" || it.value == "1"
+    }
+
+    fun getSchematicInputsBools() = getSchematicInputs().filterValues{
+        it != ""
+    }.mapValues {
+        it.value == "true" || it.value == "1"
     }
 
     fun generateOutputsMap(): Map<String, String> {

@@ -113,10 +113,16 @@ class MainView : View(), IMainController.MainControllerCallbacks {
 
                 button("Generuj") {
                     setOnMouseClicked {
-                        println(MainController.generateOutputsMap())
-                        println(ultimateSolver.getAllSolutions(MainController.generateOutputsMap(), HashMap<String, Boolean>(), HashMap<String, Boolean>()))
-//                        MainController.getSchematicOutputs(), MainController.getSchematicInputs())
-                        TODO("Tutaj panie Kosak")
+                        println(MainController.generateOutputsMap().toString() + "\n" +
+                                MainController.getSchematicOutputsBools().toString() + "\n" +
+                                MainController.getSchematicInputsBools().toString())
+
+                        println(ultimateSolver.getAllSolutions(
+                                MainController.generateOutputsMap(),
+                                MainController.getSchematicOutputsBools(),
+                                MainController.getSchematicInputsBools()
+                        ))
+                        //TODO
                     }
                 }
 
@@ -165,7 +171,7 @@ class MainView : View(), IMainController.MainControllerCallbacks {
         vbox.getChildList()!!.clear()
 
         val inputFields = mutableListOf<TextField>()
-        var out : TextField? = null
+        var out: TextField? = null
 
         gate?.let {
             it.inputs.forEachIndexed { index, input ->
