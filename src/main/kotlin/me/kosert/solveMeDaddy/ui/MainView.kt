@@ -8,8 +8,10 @@ import javafx.geometry.Orientation
 import javafx.scene.control.Label
 import javafx.scene.control.ListView
 import javafx.scene.control.TextField
+import javafx.scene.control.TextFormatter
 import javafx.scene.image.Image
 import javafx.scene.image.ImageView
+import javafx.scene.transform.Transform
 import me.kosert.solveMeDaddy.models.AbstractGate
 import me.kosert.solveMeDaddy.models.Tile
 import me.kosert.solveMeDaddy.models.GateType
@@ -180,6 +182,9 @@ class MainView : View(), IMainController.MainControllerCallbacks {
                     inputFields.add(textfield {
                         maxWidth = 100.0
                         text = input
+                        textProperty().addListener { obs, old, new ->
+                            text = new.toUpperCase()
+                        }
                         requestFocus()
                     })
                 }
@@ -202,6 +207,9 @@ class MainView : View(), IMainController.MainControllerCallbacks {
                 out = textfield {
                     maxWidth = 100.0
                     text = it.output
+                    textProperty().addListener { obs, old, new ->
+                        text = new.toUpperCase()
+                    }
                 }
             }
             vbox.add(outRow)
