@@ -117,20 +117,6 @@ public class UltimateSolver {
         return solutions;
     }
 
-//    private List<String> getCNFPermutations(List<List<Boolean>> permutations, List<String> outNames, List<CNFValue> cnfValues) {
-//        List<String> results = new ArrayList<>();
-//
-//        for(List<Boolean> permutation : permutations) {
-//            String cnfPermutation = "";
-//            for(int i = 0; i < outNames.size(); i++) {
-//                cnfPermutation += getCNFValue(cnfValues, outNames.get(i), permutation.get(i)).getCnf();
-//            }
-//            results.add(cnfPermutation);
-//        }
-//
-//        return results;
-//    }
-
     private List<Permutation> getCNFPermutations(List<List<Boolean>> permutations, List<String> outNames, List<CNFValue> cnfValues) {
         List<Permutation> results = new ArrayList<>();
 
