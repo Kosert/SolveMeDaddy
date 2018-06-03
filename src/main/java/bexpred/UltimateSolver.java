@@ -30,16 +30,6 @@ public class UltimateSolver {
         reader = new DimacsReader(mi);
     }
 
-    private BExprTree tree;
-
-    public void initialize(String expression) throws BExprPreParseException {
-        tree = new BExprTree(expression);
-    }
-
-    public List<String> getVariables() {
-        return tree.getVars();
-    }
-
     private List<String> getVariables(Collection<String> expressions) throws BExprPreParseException {
         String expression = "";
 
@@ -52,19 +42,6 @@ public class UltimateSolver {
         }
 
         return new BExprTree(expression).getVars();
-    }
-
-    public int getVariablesCount() {
-        return tree.getVarCount();
-    }
-
-    public String getCNF() {
-        String pos = tree.getTruthTable().getPOS(tree.getVars());
-        pos = pos.replaceAll("\\*", " 0\n");
-        pos = pos.replaceAll(" \\+ ", " ");
-        pos = pos.replaceAll("!", "-");
-        pos = pos.replaceAll("[()]", "");
-        return pos + " 0";
     }
 
     private String getCNF(String expression) throws BExprPreParseException {
