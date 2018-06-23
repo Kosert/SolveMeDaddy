@@ -11,6 +11,7 @@ interface IMainController {
     val gateTypes : ObservableList<GateType>
 
     fun onAddClicked()
+    fun onRemoveClicked()
     fun shouldDisableAddButton() : Boolean
     fun onFieldSelected(tile: Tile)
     fun addInput(gate: AbstractGate)

@@ -47,6 +47,14 @@ object MainController : Controller(), IMainController {
         onFieldSelected(tile)
     }
 
+    override fun onRemoveClicked() {
+        val tile = callbacks.getSelectedTile()!!
+        tile.content = null
+        addedGates.remove(tile.index)
+        callbacks.refreshGridCell(tile.index)
+        onFieldSelected(tile)
+    }
+
     override fun shouldDisableAddButton(): Boolean {
 
         if (callbacks.getSelectedAddType() == null) {

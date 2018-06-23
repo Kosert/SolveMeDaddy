@@ -122,11 +122,10 @@ class MainView : View(), IMainController.MainControllerCallbacks {
                     id = "solutions"
                     isVisible = false
                     label("Rozwiązania")
-                    combobox <Solution> {
+                    combobox<Solution> {
                         id = "solutionsComboBox"
 
-                        selectionModel.selectedItemProperty().addListener(ChangeListener <Solution> {
-                            _, _, newValue : Solution? ->
+                        selectionModel.selectedItemProperty().addListener(ChangeListener<Solution> { _, _, newValue: Solution? ->
                             if (newValue == null) return@ChangeListener
                             controller.onSolutionSelected(newValue.index)
                         })
@@ -219,13 +218,21 @@ class MainView : View(), IMainController.MainControllerCallbacks {
             }
             vbox.add(outRow)
 
-            val buttonSave = button("Zapisz") {
-                setOnMouseClicked {
-                    val inputs = inputFields.map { it.text }
-                    controller.saveGate(gate, inputs, out!!.text)
+            val buttonsBox = hbox(10) {
+                button("Zapisz") {
+                    setOnMouseClicked {
+                        val inputs = inputFields.map { it.text }
+                        controller.saveGate(gate, inputs, out!!.text)
+                    }
+                }
+                button("Usuń") {
+                    setOnMouseClicked {
+                        controller.onRemoveClicked()
+                        validateAddButton()
+                    }
                 }
             }
-            vbox.add(buttonSave)
+            vbox.add(buttonsBox)
 
         } ?: run {
             val row = label("To pole jest puste")
