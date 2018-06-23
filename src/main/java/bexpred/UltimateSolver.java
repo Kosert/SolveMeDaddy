@@ -158,9 +158,9 @@ public class UltimateSolver {
                     }
                     results.add(cnfResult);
                 }
-            } catch (ParseFormatException | IOException | TimeoutException e) {
-                e.printStackTrace();
-            } catch (ContradictionException e) {
+            } catch (ParseFormatException | TimeoutException e) {
+//                e.printStackTrace();
+            } catch (ContradictionException | IOException e) {
 //                Inconsistency
             }
         }
