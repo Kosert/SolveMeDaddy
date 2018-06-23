@@ -2,25 +2,20 @@
 
 package me.kosert.solveMeDaddy.ui
 
-import bexpred.UltimateSolver
+import javafx.collections.FXCollections
 import javafx.geometry.Insets
 import javafx.geometry.Orientation
+import javafx.scene.control.ComboBox
 import javafx.scene.control.Label
 import javafx.scene.control.ListView
 import javafx.scene.control.TextField
-import javafx.scene.control.TextFormatter
 import javafx.scene.image.Image
 import javafx.scene.image.ImageView
-import javafx.scene.transform.Transform
-import me.kosert.solveMeDaddy.models.AbstractGate
-import me.kosert.solveMeDaddy.models.Tile
-import me.kosert.solveMeDaddy.models.GateType
-import me.kosert.solveMeDaddy.models.Variable
+import me.kosert.solveMeDaddy.models.*
 import tornadofx.*
 
 class MainView : View(), IMainController.MainControllerCallbacks {
 
-    private val ultimateSolver = UltimateSolver()
     private val controller: IMainController = MainController
     private val fields = mutableListOf<Tile>()
 
@@ -119,12 +114,22 @@ class MainView : View(), IMainController.MainControllerCallbacks {
                                 MainController.getSchematicOutputsBools().toString() + "\n" +
                                 MainController.getSchematicInputsBools().toString())
 
-                        println(ultimateSolver.getAllSolutions(
-                                MainController.generateOutputsMap(),
-                                MainController.getSchematicOutputsBools(),
-                                MainController.getSchematicInputsBools()
-                        ))
-                        //TODO
+                        controller.onGenerateClicked()
+                    }
+                }
+
+                vbox {
+                    id = "solutions"
+                    isVisible = false
+                    label("Rozwiązania")
+                    combobox <Solution> {
+                        id = "solutionsComboBox"
+
+                        selectionModel.selectedItemProperty().addListener(ChangeListener <Solution> {
+                            _, _, newValue : Solution? ->
+                            if (newValue == null) return@ChangeListener
+                            controller.onSolutionSelected(newValue.index)
+                        })
                     }
                 }
 
@@ -237,16 +242,20 @@ class MainView : View(), IMainController.MainControllerCallbacks {
             vbox.add(label("Brak"))
             return
         }
-        vbox.add(label("Nazwa | Wartość"))
+        vbox.add(label("Nazwa | Wartość | Wygenerowane"))
 
         variables.forEach {
             val row = hbox {
-                label(it.name) { minWidth = 100.0 }
+                label(it.name) { minWidth = 50.0 }
                 textfield {
                     id = "variable_${it.name}"
                     text = it.value
-                    maxWidth = 100.0
+                    maxWidth = 65.0
                     isDisable = !it.editable
+                }
+                label {
+                    paddingLeft = 10.0
+                    id = "variable_gen_${it.name}"
                 }
             }
             vbox.add(row)
@@ -262,5 +271,31 @@ class MainView : View(), IMainController.MainControllerCallbacks {
             map[it] = textfield.text
         }
         return map
+    }
+
+    override fun setGeneratedValues(map: MutableMap<String, String>) {
+
+        map.forEach { name, value ->
+            val genLabel = root.lookup("#variable_gen_$name") as Label
+            genLabel.text = value
+        }
+    }
+
+    override fun setSolutionsSize(size: Int) {
+
+        val vbox = root.lookup("#solutions")
+        val combo = root.lookup("#solutionsComboBox") as ComboBox<Solution>
+
+        vbox.isVisible = true
+
+        if (size == 0) {
+            combo.items = FXCollections.observableArrayList<Solution>()
+        }
+
+        val entries = FXCollections.observableArrayList<Solution>()
+        repeat(size) {
+            entries.add(Solution(it))
+        }
+        combo.items = entries
     }
 }
