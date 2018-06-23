@@ -1,17 +1,18 @@
 package me.kosert.solveMeDaddy.ui
 
+import bexpred.UltimateSolver
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
-import me.kosert.solveMeDaddy.models.AbstractGate
-import me.kosert.solveMeDaddy.models.GateType
-import me.kosert.solveMeDaddy.models.Tile
-import me.kosert.solveMeDaddy.models.Variable
+import me.kosert.solveMeDaddy.models.*
 import me.kosert.solveMeDaddy.util.GateFactory
 import tornadofx.Controller
 
 object MainController : Controller(), IMainController {
 
     private lateinit var callbacks: IMainController.MainControllerCallbacks
+
+    private val ultimateSolver = UltimateSolver()
+    private val solutions = mutableListOf<MutableMap<String, String>>()
 
     override fun setCallback(callbacks: IMainController.MainControllerCallbacks) {
         this.callbacks = callbacks
@@ -86,6 +87,25 @@ object MainController : Controller(), IMainController {
         refreshVariables()
     }
 
+    override fun onGenerateClicked() {
+        val generated = ultimateSolver.getAllSolutions(
+                generateOutputsMap(), getSchematicOutputsBools(), getSchematicInputsBools())
+        solutions.clear()
+        solutions.addAll(generated)
+        println(solutions)
+
+        callbacks.setSolutionsSize(solutions.size)
+    }
+
+    override fun onSolutionSelected(index: Int) {
+        val solution = solutions.get(index)
+        println("Selected: $solution")
+
+        refreshVariableValues()
+        refreshVariables()
+        callbacks.setGeneratedValues(solution)
+    }
+
     private fun refreshVariables() {
 
         val namesList = mutableSetOf<String>()
@@ -103,11 +123,9 @@ object MainController : Controller(), IMainController {
                 toRemove.add(it.key)
         }
         variables.minusAssign(toRemove)
-
         namesList.forEach {
             variables.putIfAbsent(it, "")
         }
-
         variables.remove("")
 
         val editables = getSchematicInputs().plus(getSchematicOutputs())

@@ -15,6 +15,8 @@ interface IMainController {
     fun onFieldSelected(tile: Tile)
     fun addInput(gate: AbstractGate)
     fun saveGate(gate: AbstractGate, inputs: List<String>, output: String)
+    fun onGenerateClicked()
+    fun onSolutionSelected(index: Int)
     fun setCallback(callbacks: MainControllerCallbacks)
 
     interface MainControllerCallbacks {
@@ -25,5 +27,7 @@ interface IMainController {
         fun populateDetails(gate: AbstractGate?)
         fun populateVariables(variables: List<Variable>)
         fun getVariableValues(variables: Set<String>): Map<String, String>
+        fun setSolutionsSize(size: Int)
+        fun setGeneratedValues(map: MutableMap<String, String>)
     }
 }
