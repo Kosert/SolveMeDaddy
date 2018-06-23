@@ -4,13 +4,16 @@ import me.kosert.solveMeDaddy.models.*
 
 object GateFactory {
 
-    fun createGate(type: GateType) : AbstractGate {
+    fun createGate(type: GateType): AbstractGate {
 
-        return when(type) {
+        return when (type) {
             GateType.NOT -> GateNot()
             GateType.OR -> GateOr()
             GateType.AND -> GateAnd()
-            else -> TODO("This gate was not added to gate factory")
+            GateType.XOR -> GateXor()
+            GateType.NAND -> GateNand()
+            GateType.NOR -> GateNor()
+            else -> TODO("This gate was not added to GateFactory")
         }
     }
 }

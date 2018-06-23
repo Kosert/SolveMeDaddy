@@ -5,5 +5,7 @@ enum class GateType {
     NOT,
     OR,
     AND,
-    //TODO itd
+    XOR,
+    NAND,
+    NOR
 }

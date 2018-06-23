@@ -94,6 +94,8 @@ object MainController : Controller(), IMainController {
         solutions.addAll(generated)
         println(solutions)
 
+        refreshVariableValues()
+        refreshVariables()
         callbacks.setSolutionsSize(solutions.size)
     }
 
