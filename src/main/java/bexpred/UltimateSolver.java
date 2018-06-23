@@ -138,9 +138,8 @@ public class UltimateSolver {
         for(Permutation cnfPermutation : cnfPermutations) {
             try {
                 String cnf = cnfPermutation.getPermutation();
-                long numberOfLines = cnf.chars().filter(ch -> ch == '0').count();
-                String preCnf = "p cnf " + valuesMapping.keySet().size() + " " + numberOfLines + "\n" + cnf.substring(0, cnf.length() - 1);
-                problem = reader.parseInstance(new ByteArrayInputStream(preCnf.getBytes()));
+                if(cnf.contains("#unsat"))
+                    continue;
 
                 List<String> outputNames = cnfPermutation.getOutputsNames();
                 List<Boolean> states = cnfPermutation.getStates();
@@ -149,14 +148,22 @@ public class UltimateSolver {
                     outValues.put(outputNames.get(i), states.get(i) ? "1" : "0");
                 }
 
-                while (problem.isSatisfiable()) {
-                    Map<String, String> cnfResult = new HashMap<>(outValues);
+                if(!cnf.matches("[\\s\\r]*")) {
+                    long numberOfLines = cnf.chars().filter(ch -> ch == '0').count();
+                    String preCnf = "p cnf " + valuesMapping.keySet().size() + " " + numberOfLines + "\n" + cnf.substring(0, cnf.length() - 1);
+                    problem = reader.parseInstance(new ByteArrayInputStream(preCnf.getBytes()));
 
-                    int[] res = problem.model();
-                    for(int variable : res) {
-                        cnfResult.put(valuesMapping.get("" + Math.abs(variable)), (variable > 0 ? "1" : "0"));
+                    while (problem.isSatisfiable()) {
+                        Map<String, String> cnfResult = new HashMap<>(outValues);
+
+                        int[] res = problem.model();
+                        for (int variable : res) {
+                            cnfResult.put(valuesMapping.get("" + Math.abs(variable)), (variable > 0 ? "1" : "0"));
+                        }
+                        results.add(cnfResult);
                     }
-                    results.add(cnfResult);
+                } else {
+                    results.add(outValues);
                 }
             } catch (ParseFormatException | TimeoutException e) {
 //                e.printStackTrace();

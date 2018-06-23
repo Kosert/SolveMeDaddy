@@ -36,7 +36,7 @@ public class CNFValue {
                 }
             }
 
-            toAdd = toAdd.replaceAll("^ [ \t]*0 *$", "");
+            toAdd = toAdd.replaceAll("^ [ \t]*0 *$", "#unsat");
             if(!toAdd.equals(""))
                 result += toAdd + "\n";
         }
