@@ -15,13 +15,15 @@ import org.sat4j.tools.ModelIterator;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class UltimateSolver {
 
-    ISolver solver;
-    ModelIterator mi;
-    Reader reader;
-    IProblem problem;
+    private ISolver solver;
+    private ModelIterator mi;
+    private Reader reader;
+    private IProblem problem;
+    private Map<String, String> predefinedValues;
 
     public UltimateSolver() {
         solver = SolverFactory.newDefault();
@@ -70,6 +72,8 @@ public class UltimateSolver {
 
     public List<Map<String, String>> getAllSolutions(Map<String, String> outs, Map<String, Boolean> outsValues, Map<String, Boolean> inputsValues)
             throws BExprPreParseException {
+        predefinedValues = inputsValues.keySet().stream().collect(Collectors.toMap(s -> s, s -> inputsValues.get(s) ? "1" : "0"));
+
 //        Step 1. Map names into values
         List<String> variables = getVariables(outs.values());
         variables.sort(Comparator.comparingInt(String::length).reversed());
@@ -143,10 +147,11 @@ public class UltimateSolver {
 
                 List<String> outputNames = cnfPermutation.getOutputsNames();
                 List<Boolean> states = cnfPermutation.getStates();
-                Map<String, String> outValues = new HashMap<>();
+                Map<String, String> predfValues = new HashMap<>();
                 for(int i = 0; i < outputNames.size(); i++) {
-                    outValues.put(outputNames.get(i), states.get(i) ? "1" : "0");
+                    predfValues.put(outputNames.get(i), states.get(i) ? "1" : "0");
                 }
+                predfValues.putAll(predefinedValues);
 
                 if(!cnf.matches("[\\s\\r]*")) {
                     long numberOfLines = cnf.chars().filter(ch -> ch == '0').count();
@@ -154,16 +159,17 @@ public class UltimateSolver {
                     problem = reader.parseInstance(new ByteArrayInputStream(preCnf.getBytes()));
 
                     while (problem.isSatisfiable()) {
-                        Map<String, String> cnfResult = new HashMap<>(outValues);
+                        Map<String, String> cnfResult = new HashMap<>(predfValues);
 
                         int[] res = problem.model();
                         for (int variable : res) {
                             cnfResult.put(valuesMapping.get("" + Math.abs(variable)), (variable > 0 ? "1" : "0"));
                         }
+                        cnfResult.putAll(predefinedValues);
                         results.add(cnfResult);
                     }
                 } else {
-                    results.add(outValues);
+                    results.add(predfValues);
                 }
             } catch (ParseFormatException | TimeoutException e) {
 //                e.printStackTrace();
@@ -171,8 +177,7 @@ public class UltimateSolver {
 //                Inconsistency
             }
         }
-
-        return results;
+        return results.stream().distinct().collect(Collectors.toList());
     }
 
     private CNFValue getCNFValue(List<CNFValue> values, String name, boolean state) {
