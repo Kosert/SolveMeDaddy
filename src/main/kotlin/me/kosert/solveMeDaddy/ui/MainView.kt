@@ -14,10 +14,10 @@ import javafx.scene.image.ImageView
 import me.kosert.solveMeDaddy.models.*
 import tornadofx.*
 
-class MainView : View(), IMainController.MainControllerCallbacks {
+class MainView : View("SolveMeDaddy"), IMainController.MainControllerCallbacks {
 
     private val controller: IMainController = MainController
-    private val fields = mutableListOf<Tile>()
+    private val fields = FXCollections.observableArrayList<Tile>()
 
     init {
         controller.setCallback(this)
@@ -88,8 +88,8 @@ class MainView : View(), IMainController.MainControllerCallbacks {
                 horizontalCellSpacing = 1.0
 
                 maxCellsInRow = 8
-                maxRows = 8
-                minHeight = 650.0
+                minHeight = 640.0
+                maxHeight = 640.0
 
                 onUserSelect(1) {
                     controller.onFieldSelected(it)
@@ -108,13 +108,25 @@ class MainView : View(), IMainController.MainControllerCallbacks {
 
             right = vbox(10) {
 
-                button("Generuj") {
-                    setOnMouseClicked {
-                        println(MainController.generateOutputsMap().toString() + "\n" +
-                                MainController.getSchematicOutputsBools().toString() + "\n" +
-                                MainController.getSchematicInputsBools().toString())
+                minWidth = 240.0
+                paddingLeft = 10.0
 
-                        controller.onGenerateClicked()
+                hbox(10) {
+                    button("Generuj") {
+                        action {
+                            println(MainController.generateOutputsMap().toString() + "\n" +
+                                    MainController.getSchematicOutputsBools().toString() + "\n" +
+                                    MainController.getSchematicInputsBools().toString())
+
+                            controller.onGenerateClicked()
+                        }
+                    }
+                    button("Dodaj pola") {
+                        action {
+                            repeat(8) {
+                                fields.add(Tile(fields.size + it))
+                            }
+                        }
                     }
                 }
 
@@ -197,7 +209,7 @@ class MainView : View(), IMainController.MainControllerCallbacks {
 
             if (it.inputs.size != it.maxInputs) {
                 val buttonAdd = button("Dodaj wejście") {
-                    setOnMouseClicked {
+                    action {
                         val inputs = inputFields.map { it.text }
                         controller.saveGate(gate, inputs, out!!.text)
                         controller.addInput(gate)
@@ -220,13 +232,13 @@ class MainView : View(), IMainController.MainControllerCallbacks {
 
             val buttonsBox = hbox(10) {
                 button("Zapisz") {
-                    setOnMouseClicked {
+                    action {
                         val inputs = inputFields.map { it.text }
                         controller.saveGate(gate, inputs, out!!.text)
                     }
                 }
                 button("Usuń") {
-                    setOnMouseClicked {
+                    action {
                         controller.onRemoveClicked()
                         validateAddButton()
                     }
