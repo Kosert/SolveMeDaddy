@@ -12,7 +12,9 @@ import org.sat4j.specs.ISolver;
 import org.sat4j.specs.TimeoutException;
 import org.sat4j.tools.ModelIterator;
 
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -24,6 +26,8 @@ public class UltimateSolver {
     private Reader reader;
     private IProblem problem;
     private Map<String, String> predefinedValues;
+    private final String CNF_PERMS = "cnf_permutations.txt";
+    private BufferedWriter writer;
 
     public UltimateSolver() {
         solver = SolverFactory.newDefault();
@@ -72,6 +76,10 @@ public class UltimateSolver {
 
     public List<Map<String, String>> getAllSolutions(Map<String, String> outs, Map<String, Boolean> outsValues, Map<String, Boolean> inputsValues)
             throws BExprPreParseException {
+        resetFile();
+        if(outs == null || outs.isEmpty())
+            return new ArrayList<Map<String, String>>();
+
         predefinedValues = inputsValues.keySet().stream().collect(Collectors.toMap(s -> s, s -> inputsValues.get(s) ? "1" : "0"));
 
 //        Step 1. Map names into values
@@ -140,10 +148,26 @@ public class UltimateSolver {
         List<Map<String, String>> results = new ArrayList<>();
 
         for(Permutation cnfPermutation : cnfPermutations) {
+            if(cnfPermutation.getPermutation().length() < 3)
+                continue;
+
             try {
                 String cnf = cnfPermutation.getPermutation();
-                if(cnf.contains("#unsat"))
+                long numberOfLines;
+                String preCnf;
+                String outsWithValues = "c Outputs values:\nc ";
+                for(int i =0; i < cnfPermutation.getOutputsNames().size(); i++) {
+                    outsWithValues += cnfPermutation.getOutputsNames().get(i) + " : " +  (cnfPermutation.getStates().get(i) ? "1" : "0");
+                }
+
+                if(cnf.contains("#unsat")) {
+                    numberOfLines = cnf.replaceAll("#unsat", "0").chars().filter(ch -> ch == '0').count();
+                    preCnf = "p cnf " + valuesMapping.keySet().size() + " " + numberOfLines + "\n" + cnf.substring(0, cnf.length() - 1);
+
+                    appendFile("c unsatisfiable\n" + outsWithValues + "\n" + preCnf.replaceAll("#unsat", "0"));
+
                     continue;
+                }
 
                 List<String> outputNames = cnfPermutation.getOutputsNames();
                 List<Boolean> states = cnfPermutation.getStates();
@@ -154,9 +178,11 @@ public class UltimateSolver {
                 predfValues.putAll(predefinedValues);
 
                 if(!cnf.matches("[\\s\\r]*")) {
-                    long numberOfLines = cnf.chars().filter(ch -> ch == '0').count();
-                    String preCnf = "p cnf " + valuesMapping.keySet().size() + " " + numberOfLines + "\n" + cnf.substring(0, cnf.length() - 1);
+                    numberOfLines = cnf.chars().filter(ch -> ch == '0').count();
+                    preCnf = outsWithValues + "\np cnf " + valuesMapping.keySet().size() + " " + numberOfLines + "\n" + cnf.substring(0, cnf.length() - 1);
                     problem = reader.parseInstance(new ByteArrayInputStream(preCnf.getBytes()));
+
+                    appendFile(preCnf);
 
                     while (problem.isSatisfiable()) {
                         Map<String, String> cnfResult = new HashMap<>(predfValues);
@@ -220,6 +246,36 @@ public class UltimateSolver {
         }
 
         return result;
+    }
+
+    private void resetFile() {
+        try {
+            writer = new BufferedWriter(new FileWriter(CNF_PERMS));
+            writer.write("c File containing all permutations");
+        } catch (Exception e) {
+
+        } finally {
+            try {
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void appendFile(String text) {
+        try {
+            writer = new BufferedWriter(new FileWriter(CNF_PERMS, true));
+            writer.append("\nc +-------------------------------------------------------------------+\n\n" + text);
+        } catch (Exception e) {
+
+        } finally {
+            try {
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 }
