@@ -26,7 +26,8 @@ public class UltimateSolver {
     private Reader reader;
     private IProblem problem;
     private Map<String, String> predefinedValues;
-    private final String CNF_PERMS = "cnf_permutations.txt";
+    private final String PERMS = "permutations.txt";
+    private final String PERMS_REV = "permutations_rev.txt";
     private BufferedWriter writer;
 
     public UltimateSolver() {
@@ -61,22 +62,10 @@ public class UltimateSolver {
         return pos + " 0";
     }
 
-    private Map<String, String> replaceWithMappings(Map<String, String> outs, Map<String, Integer> mapping) {
-        Map<String, String> result = new HashMap<>();
-        for(String key : outs.keySet()) {
-            String value = outs.get(key);
-            for(String val : mapping.keySet()) {
-                value = value.replaceAll(val, mapping.get(val).toString());
-            }
-            result.put(key, value);
-        }
-
-        return result;
-    }
-
     public List<Map<String, String>> getAllSolutions(Map<String, String> outs, Map<String, Boolean> outsValues, Map<String, Boolean> inputsValues)
             throws BExprPreParseException {
-        resetFile();
+        resetFile(PERMS);
+        resetFile(PERMS_REV);
         if(outs == null || outs.isEmpty())
             return new ArrayList<Map<String, String>>();
 
@@ -121,7 +110,6 @@ public class UltimateSolver {
 //        Step 3. Generate possible permutations and solutions
         List<String> outputsNames = new ArrayList<>(outs.keySet());
         List<List<Boolean>> permutationList = getPermutations(outputsNames, outsValues);
-//        List<String> cnfPermutations = getCNFPermutations(permutationList, outputsNames, cnfValues);
         List<Permutation> cnfPermutations = getCNFPermutations(permutationList, outputsNames, cnfValues);
 
         List<Map<String,String>> solutions = getSolutions(cnfPermutations, reversedVariablesMap);
@@ -162,9 +150,10 @@ public class UltimateSolver {
 
                 if(cnf.contains("#unsat")) {
                     numberOfLines = cnf.replaceAll("#unsat", "0").chars().filter(ch -> ch == '0').count();
-                    preCnf = "p cnf " + valuesMapping.keySet().size() + " " + numberOfLines + "\n" + cnf.substring(0, cnf.length() - 1);
+                    preCnf = outsWithValues + "\np cnf " + valuesMapping.keySet().size() + " " + numberOfLines + "\n";
 
-                    appendFile("c unsatisfiable\n" + outsWithValues + "\n" + preCnf.replaceAll("#unsat", "0"));
+                    appendFile(PERMS,"c unsatisfiable\n" +  preCnf + cnf.substring(0, cnf.length() - 1).replaceAll("#unsat", "0"));
+                    appendFile(PERMS_REV,"c unsatisfiable\n" + preCnf + replaceWithMappings(cnf.substring(0, cnf.length() - 1).replaceAll("#unsat", "0"), valuesMapping));
 
                     continue;
                 }
@@ -179,10 +168,11 @@ public class UltimateSolver {
 
                 if(!cnf.matches("[\\s\\r]*")) {
                     numberOfLines = cnf.chars().filter(ch -> ch == '0').count();
-                    preCnf = outsWithValues + "\np cnf " + valuesMapping.keySet().size() + " " + numberOfLines + "\n" + cnf.substring(0, cnf.length() - 1);
-                    problem = reader.parseInstance(new ByteArrayInputStream(preCnf.getBytes()));
+                    preCnf = outsWithValues + "\np cnf " + valuesMapping.keySet().size() + " " + numberOfLines + "\n";
+                    problem = reader.parseInstance(new ByteArrayInputStream((preCnf + cnf.substring(0, cnf.length() - 1)).getBytes()));
 
-                    appendFile(preCnf);
+                    appendFile(PERMS, preCnf + cnf.substring(0, cnf.length() - 1));
+                    appendFile(PERMS_REV, preCnf + replaceWithMappings(cnf.substring(0, cnf.length() - 1), valuesMapping));
 
                     while (problem.isSatisfiable()) {
                         Map<String, String> cnfResult = new HashMap<>(predfValues);
@@ -204,6 +194,17 @@ public class UltimateSolver {
             }
         }
         return results.stream().distinct().collect(Collectors.toList());
+    }
+
+    private String replaceWithMappings(String perm, Map<String, String> mapping) {
+        String result = perm;
+        List<String> keys = new ArrayList<>(mapping.keySet());
+        keys.sort(Comparator.comparingInt(String::length).reversed());
+        for(String key : keys) {
+            result = result.replaceAll(key, mapping.get(key));
+        }
+
+        return result;
     }
 
     private CNFValue getCNFValue(List<CNFValue> values, String name, boolean state) {
@@ -248,9 +249,9 @@ public class UltimateSolver {
         return result;
     }
 
-    private void resetFile() {
+    private void resetFile(String filename) {
         try {
-            writer = new BufferedWriter(new FileWriter(CNF_PERMS));
+            writer = new BufferedWriter(new FileWriter(filename));
             writer.write("c File containing all permutations");
         } catch (Exception e) {
 
@@ -263,9 +264,9 @@ public class UltimateSolver {
         }
     }
 
-    private void appendFile(String text) {
+    private void appendFile(String filename, String text) {
         try {
-            writer = new BufferedWriter(new FileWriter(CNF_PERMS, true));
+            writer = new BufferedWriter(new FileWriter(filename, true));
             writer.append("\nc +-------------------------------------------------------------------+\n\n" + text);
         } catch (Exception e) {
 
