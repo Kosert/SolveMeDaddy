@@ -157,7 +157,7 @@ public class UltimateSolver {
                 String preCnf;
                 String outsWithValues = "c Outputs values:\nc ";
                 for(int i =0; i < cnfPermutation.getOutputsNames().size(); i++) {
-                    outsWithValues += cnfPermutation.getOutputsNames().get(i) + " : " +  (cnfPermutation.getStates().get(i) ? "1" : "0");
+                    outsWithValues += cnfPermutation.getOutputsNames().get(i) + " : " +  (cnfPermutation.getStates().get(i) ? "1" : "0") + ", ";
                 }
 
                 if(cnf.contains("#unsat")) {
