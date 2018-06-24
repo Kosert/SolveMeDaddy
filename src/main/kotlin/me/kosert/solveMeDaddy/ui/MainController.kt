@@ -44,6 +44,7 @@ object MainController : Controller(), IMainController {
         tile.content = gate
         addedGates[tile.index] = gate
         callbacks.refreshGridCell(tile.index)
+        callbacks.setSolutionsSize(0)
         onFieldSelected(tile)
     }
 
@@ -52,6 +53,7 @@ object MainController : Controller(), IMainController {
         tile.content = null
         addedGates.remove(tile.index)
         callbacks.refreshGridCell(tile.index)
+        callbacks.setSolutionsSize(0)
         onFieldSelected(tile)
     }
 
